@@ -5,13 +5,13 @@ let courses = [];
 
 function initialize() {
   return new Promise((resolve, reject) => {
-    fs.readFile("./data/students.json", "utf8", (err, studentData) => {
+    fs.readFile("../data/students.json", "utf8", (err, studentData) => {
       if (err) {
         reject("Unable to read students.json");
         return;
       }
 
-      fs.readFile("./data/courses.json", "utf8", (err, courseData) => {
+      fs.readFile("../data/courses.json", "utf8", (err, courseData) => {
         if (err) {
           reject("Unable to read courses.json");
           return;
