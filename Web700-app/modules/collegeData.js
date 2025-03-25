@@ -1,120 +1,132 @@
 const fs = require("fs");
 
-class Data{
-    constructor(students, courses){
-        this.students = students;
-        this.courses = courses;
-    }
-}
+let students = [];
+let courses = [];
 
-let dataCollection = null;
+function initialize() {
+  return new Promise((resolve, reject) => {
+    fs.readFile("./data/students.json", "utf8", (err, studentData) => {
+      if (err) {
+        reject("Unable to read students.json");
+        return;
+      }
 
-module.exports.initialize = function () {
-    return new Promise( (resolve, reject) => {
-        fs.readFile('./data/courses.json','utf8', (err, courseData) => {
-            if (err) {
-                reject("unable to load courses"); return;
-            }
-
-            fs.readFile('./data/students.json','utf8', (err, studentData) => {
-                if (err) {
-                    reject("unable to load students"); return;
-                }
-
-                dataCollection = new Data(JSON.parse(studentData), JSON.parse(courseData));
-                resolve();
-            });
-        });
-    });
-}
-
-module.exports.getAllStudents = function(){
-    return new Promise((resolve,reject)=>{
-        if (dataCollection.students.length == 0) {
-            reject("query returned 0 results"); return;
+      fs.readFile("./data/courses.json", "utf8", (err, courseData) => {
+        if (err) {
+          reject("Unable to read courses.json");
+          return;
         }
 
-        resolve(dataCollection.students);
-    })
-}
-
-module.exports.getTAs = function () {
-    return new Promise(function (resolve, reject) {
-        var filteredStudents = [];
-
-        for (let i = 0; i < dataCollection.students.length; i++) {
-            if (dataCollection.students[i].TA == true) {
-                filteredStudents.push(dataCollection.students[i]);
-            }
-        }
-
-        if (filteredStudents.length == 0) {
-            reject("query returned 0 results"); return;
-        }
-
-        resolve(filteredStudents);
-    });
-};
-
-module.exports.getCourses = function(){
-   return new Promise((resolve,reject)=>{
-    if (dataCollection.courses.length == 0) {
-        reject("query returned 0 results"); return;
-    }
-
-    resolve(dataCollection.courses);
-   });
-};
-
-module.exports.getStudentByNum = function (num) {
-    return new Promise(function (resolve, reject) {
-        var foundStudent = null;
-
-        for (let i = 0; i < dataCollection.students.length; i++) {
-            if (dataCollection.students[i].studentNum == num) {
-                foundStudent = dataCollection.students[i];
-            }
-        }
-
-        if (!foundStudent) {
-            reject("query returned 0 results"); return;
-        }
-
-        resolve(foundStudent);
-    });
-};
-
-module.exports.getStudentsByCourse = function (course) {
-    return new Promise(function (resolve, reject) {
-        var filteredStudents = [];
-
-        for (let i = 0; i < dataCollection.students.length; i++) {
-            if (dataCollection.students[i].course == course) {
-                filteredStudents.push(dataCollection.students[i]);
-            }
-        }
-
-        if (filteredStudents.length == 0) {
-            reject("query returned 0 results"); return;
-        }
-
-        resolve(filteredStudents);
-    });
-};
-
-module.exports.addStudent = function (studentData) {
-    return new Promise((resolve, reject) => {
-        // Ensure TA is properly set to true/false
-        studentData.TA = studentData.TA === "true";
-
-        // Generate a student number based on the current count
-        studentData.studentNum = dataCollection.students.length + 1;
-
-        // Add the student to the list
-        dataCollection.students.push(studentData);
-
+        students = JSON.parse(studentData);
+        courses = JSON.parse(courseData);
         resolve();
+      });
     });
+  });
+}
+
+function getAllStudents() {
+  return new Promise((resolve, reject) => {
+    if (students.length > 0) {
+      resolve(students);
+    } else {
+      reject("no results returned");
+    }
+  });
+}
+
+function getTAs() {
+  return new Promise((resolve, reject) => {
+    const TAs = students.filter(s => s.TA === true);
+    if (TAs.length > 0) {
+      resolve(TAs);
+    } else {
+      reject("no results returned");
+    }
+  });
+}
+
+function getCourses() {
+  return new Promise((resolve, reject) => {
+    if (courses.length > 0) {
+      resolve(courses);
+    } else {
+      reject("no results returned");
+    }
+  });
+}
+
+function getStudentsByCourse(course) {
+  return new Promise((resolve, reject) => {
+    const filtered = students.filter(s => s.course == course);
+    if (filtered.length > 0) {
+      resolve(filtered);
+    } else {
+      reject("no results returned");
+    }
+  });
+}
+
+function getStudentByNum(num) {
+  return new Promise((resolve, reject) => {
+    const student = students.find(s => s.studentNum == num);
+    if (student) {
+      resolve(student);
+    } else {
+      reject("no results returned");
+    }
+  });
+}
+
+function addStudent(studentData) {
+  return new Promise((resolve, reject) => {
+    // Make sure TA is boolean
+    studentData.TA = (studentData.TA === "true");
+
+    // Auto-generate a new student number
+    studentData.studentNum = students.length > 0
+      ? students[students.length - 1].studentNum + 1
+      : 1;
+
+    students.push(studentData);
+    resolve();
+  });
+}
+
+function updateStudent(studentData) {
+  return new Promise((resolve, reject) => {
+    studentData.TA = (studentData.TA === "true");
+
+    const index = students.findIndex(s => s.studentNum == studentData.studentNum);
+
+    if (index !== -1) {
+      students[index] = studentData;
+      resolve();
+    } else {
+      reject("Student not found");
+    }
+  });
+}
+
+function getCourseById(id) {
+  return new Promise((resolve, reject) => {
+    const course = courses.find(c => c.courseId == id);
+    if (course) {
+      resolve(course);
+    } else {
+      reject("query returned 0 results");
+    }
+  });
+}
+
+module.exports = {
+  initialize,
+  getAllStudents,
+  getTAs,
+  getCourses,
+  getStudentsByCourse,
+  getStudentByNum,
+  addStudent,
+  updateStudent,
+  getCourseById
 };
-
-
