@@ -18,9 +18,12 @@ const collegeData = require("./modules/collegeData");
 
 const HTTP_PORT = process.env.PORT || 8080;
 
+require('pg'); // explicitly require the "pg" module
+const Sequelize = require('sequelize');
+
 // Set EJS as view engine
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+app.set("views", path.join(__dirname, "/views"));
 
 // Use express-ejs-layouts
 app.use(expressLayouts);
@@ -30,7 +33,7 @@ app.set("layout", "layouts/main");
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from /public
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "/public")));
 
 // Middleware to set active route
 app.use(function (req, res, next) {
