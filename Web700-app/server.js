@@ -56,9 +56,9 @@ app.locals.equal = function (lvalue, rvalue, options) {
     return (lvalue != rvalue) ? options.inverse(this) : options.fn(this);
 };
 
-//////////////////////////////////////
+
 // ROUTES
-//////////////////////////////////////
+
 
 // Home Page
 app.get("/", (req, res) => {
