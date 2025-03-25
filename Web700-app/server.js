@@ -94,7 +94,7 @@ app.get("/students", (req, res) => {
     }
 });
 
-app.get("/student/*", (req, res) => {
+app.get("/student/:studentNum", (req, res) => {
     collegeData.getStudentByNum(req.params.studentNum)
         .then((student) => res.render("student", { student }))
         .catch(() => res.status(404).send("Student Not Found"));
